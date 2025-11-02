@@ -30,8 +30,7 @@ def query_google(search_term, prefix="board game rules pdf"):
     for i, item in enumerate(results, 1):
         url = item["link"]
         if url.split(".")[-1] == "pdf":
-            save_pdf(url, search_term)
-            break
+            return save_pdf(url, search_term)
 
 
 def save_pdf(url, search_term, save_dir="pdfs"):

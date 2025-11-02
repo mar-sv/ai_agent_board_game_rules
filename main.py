@@ -15,7 +15,6 @@ llm = init_chat_model("gpt-4o-mini")
 
 class State(TypedDict):
     # messages: Annotated[List, add_messages]
-    url_basename: str | None
     game_name: str | None
     pdf_text: str | None
     llm_evaluation: str | None
@@ -41,7 +40,42 @@ graph_builder = StateGraph(State)
 graph_builder.add_node("google_search", google_search)
 graph_builder.add_node("analyze_pdf", analyze_pdf)
 
-graph_builder.add_edge(START, start_key="google_search")
+graph_builder.add_edge(START, end_key="google_search")
 graph_builder.add_edge(start_key="google_search", end_key="analyze_pdf")
 
 graph_builder.add_edge(start_key="analyze_pdf", end_key=END)
+
+graph = graph_builder.compile()
+
+
+def run_chatbot():
+    # print("Multi-Source Research Agent")
+    # print("Type 'exit' to quit\n")
+
+    # while True:
+    #     user_input = input("Ask me anything: ")
+    #     if user_input.lower() == "exit":
+    #         print("Bye")
+    #         break
+    state = {"game_name": "catan",
+             "pdf_text": None,
+             "llm_evaluation": None}
+
+    # print("\nStarting parallel research process...")
+    # print("Launching Google, Bing, and Reddit searches...\n")
+    final_state = graph.invoke(state)
+
+    llm_evaluation = final_state.get("llm_evaluation", "")
+
+    if llm_evaluation:
+        print(f"\nFinal Answer:\n{llm_evaluation}\n")
+
+    if llm_evaluation.split(" — ")[0] == "MATCH":
+        pass
+        # here do stuff. Chunk the pdf text and add it to db
+
+    print("-" * 80)
+
+
+if __name__ == "__main__":
+    run_chatbot()
