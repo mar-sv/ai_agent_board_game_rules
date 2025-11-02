@@ -5,6 +5,7 @@ from langgraph.graph.message import add_messages
 from langchain.chat_models import init_chat_model
 from typing_extensions import TypedDict
 from pydantic import BaseModel, Field
+import pdfplumber
 
 from web_crawler import query_google
 
@@ -28,6 +29,11 @@ def google_search(state):
 def analyze_pdf(state):
     # return
     pass
+
+
+def extract_text_from_pdf(pdf_path):
+    with pdfplumber.open(pdf_path) as pdf:
+        return "".join(page.extract_text() or "" for page in pdf.pages).replace("\n", " ")
 
 
 graph_builder = StateGraph(State)
