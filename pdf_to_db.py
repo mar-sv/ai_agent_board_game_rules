@@ -14,14 +14,17 @@ import sys
 import uuid
 import hashlib
 import re
-from datetime import datetime
 from typing import List, Tuple
 import psycopg
-from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer
+import pdfplumber
+from dotenv import load_dotenv
+
+load_env = load_dotenv()
 
 # ---------- CONFIG ----------
-PG_DSN = os.getenv("PG_DSN", "postgresql://user:pass@localhost:5432/ragdb")
+# connection_string = "postgresql://{user}:{password}@{host}:{port}/{db_name}"
+PG_DSN = os.getenv("DB_DSN", "")
 EMBED_MODEL = os.getenv(
     "EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")  # 384 dims
 CHUNK_MAX_WORDS = int(os.getenv("CHUNK_MAX_WORDS", "220"))
@@ -35,18 +38,17 @@ def sha1(text: str) -> str:
     return hashlib.sha1(text.encode("utf-8", "ignore")).hexdigest()
 
 
-def read_pdf(path: str) -> Tuple[str, List[Tuple[int, str]]]:
-    reader = PdfReader(path)
+def read_pdf(pdf_path: str):
     pages = []
-    for i, p in enumerate(reader.pages):
-        t = p.extract_text() or ""
-        # keep figure/table captions close to page content
-        caps = [ln for ln in t.splitlines() if re.match(
-            r"^(Figure|Table)\s+\d+[:\.]", ln)]
-        pages.append(
-            (i+1, (t + ("\n" + "\n".join(caps) if caps else "")).strip()))
-    full = "\n\n".join(txt for _, txt in pages)
-    return full, pages
+    full_text = ""
+    with pdfplumber.open(pdf_path) as pdf:
+
+        for page_n, page in enumerate(pdf.pages):
+            page_text = page.extract_text().replace("\n", " ")
+            pages.append((page_n + 1, page_text))
+            full_text += page_text
+
+        return full_text, pages
 
 
 def to_paragraphs(page_text: str) -> List[str]:
@@ -74,23 +76,12 @@ def chunk_words(paras: List[str], max_words=220, overlap=60) -> List[str]:
     return chunks
 
 
-def guess_section(chunk_text: str) -> str:
-    for ln in chunk_text.split("\n")[:6]:
-        ln = ln.strip()
-        if re.match(r"^\d+(\.\d+)*\s+\S+", ln) or re.match(r"^[A-Z][A-Za-z0-9\s\-]{3,}$", ln):
-            return ln[:120]
-    return "Body"
-
-
 DDL = """
 CREATE TABLE IF NOT EXISTS documents(
   doc_id TEXT PRIMARY KEY,
   doc_title TEXT,
-  source_path TEXT,
-  version TEXT,
   content_sha1 TEXT UNIQUE,
-  pages INT,
-  ingested_at TIMESTAMPTZ DEFAULT now()
+  pages INT
 );
 CREATE TABLE IF NOT EXISTS chunks(
   chunk_id TEXT PRIMARY KEY,
@@ -100,30 +91,19 @@ CREATE TABLE IF NOT EXISTS chunks(
   embedding vector(384),
   word_count INT,
   page_start INT,
-  page_end INT,
-  section_path TEXT,
-  created_at TIMESTAMPTZ DEFAULT now()
+  page_end INT
 );
--- Optional sparse search for hybrid retrieval
-DO $$ BEGIN
-  ALTER TABLE chunks ADD COLUMN ts tsvector
-    GENERATED ALWAYS AS (to_tsvector('english', coalesce(text,''))) STORED;
-EXCEPTION WHEN duplicate_column THEN NULL; END $$;
-CREATE INDEX IF NOT EXISTS idx_chunks_doc   ON chunks(doc_id, chunk_index);
-CREATE INDEX IF NOT EXISTS idx_chunks_ts    ON chunks USING GIN (ts);
--- pgvector IVF index (requires ANALYZE; tune lists per data size)
-CREATE INDEX IF NOT EXISTS idx_chunks_emb ON chunks USING ivfflat(embedding vector_cosine_ops) WITH (lists = 100);
 """
 
 UPSERT_DOC = """
-INSERT INTO documents (doc_id, doc_title, source_path, version, content_sha1, pages)
-VALUES (%s,%s,%s,%s,%s,%s)
+INSERT INTO documents (doc_id, doc_title, content_sha1, pages)
+VALUES (%s,%s,%s,%s)
 ON CONFLICT (doc_id) DO NOTHING
 """
 
 UPSERT_CHUNK = """
-INSERT INTO chunks (chunk_id, doc_id, chunk_index, text, embedding, word_count, page_start, page_end, section_path)
-VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+INSERT INTO chunks (chunk_id, doc_id, chunk_index, text, embedding, word_count, page_start, page_end)
+VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
 ON CONFLICT (chunk_id) DO NOTHING
 """
 
@@ -141,12 +121,11 @@ def main(paths: List[str]):
             title = os.path.splitext(os.path.basename(path))[0]
             full, pages = read_pdf(path)
             content_id = sha1(full)
-            doc_id = content_id  # stable id for dedupe/versioning
-            version = datetime.utcnow().strftime("%Y%m%d")
+            doc_id = content_id
 
             with conn.cursor() as cur:
-                cur.execute(UPSERT_DOC, (doc_id, title, os.path.abspath(
-                    path), version, content_id, len(pages)))
+                cur.execute(UPSERT_DOC, (doc_id, title,
+                            content_id, len(pages)))
 
             # Build page-aware chunks
             chunk_rows = []
@@ -162,8 +141,7 @@ def main(paths: List[str]):
                         "text": chunk,
                         "word_count": len(chunk.split()),
                         "page_start": page_no,
-                        "page_end": page_no,
-                        "section_path": guess_section(chunk)
+                        "page_end": page_no
                     })
 
             if not chunk_rows:
@@ -193,13 +171,11 @@ def main(paths: List[str]):
                             r["word_count"],
                             r["page_start"],
                             r["page_end"],
-                            r["section_path"],
                         ),
                     )
             print(f"[ok] Ingested {title}: {len(chunk_rows)} chunks")
 
-    print("Done. TIP: run ANALYZE; and consider increasing ivfflat lists as the corpus grows.")
-
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    paths = ["pdfs/catan.pdf"]
+    main(paths)
