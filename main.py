@@ -69,12 +69,11 @@ def run_chatbot():
     # print("Launching Google, Bing, and Reddit searches...\n")
     final_state = graph.invoke(state)
 
-    structured_output = final_state.get("boardgame_evaluation", "")
+    if structured_output := final_state.get("boardgame_evaluation", ""):
+        pass
+        # print(f"\nFinal Answer:\n{llm_evaluation}\n")
 
-    if structured_output:
-        print(f"\nFinal Answer:\n{llm_evaluation}\n")
-
-    if llm_evaluation.split(" — ")[0] == "MATCH":
+    if structured_output.rules:
         pdf_paths = [f"pdfs/{final_state.get('game_name')}"]
         process_and_insert_pdf(pdf_paths)
 
