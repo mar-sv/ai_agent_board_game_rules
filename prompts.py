@@ -13,10 +13,11 @@ class PromptTemplates:
         Instructions:
         - Read the provided text carefully.
         - Decide if the text represents the official rules for that game.
-        - Output exactly one of the following:
-            - MATCH — if it clearly contains or is the official rules for [GAME NAME].
-            - NOT_MATCH — if it is not, or if it’s unclear.
+
         - After your label, provide a short (1–2 sentence) explanation for your reasoning."""
+        # - Output exactly one of the following:
+        #     - MATCH — if it clearly contains or is the official rules for [GAME NAME].
+        #     - NOT_MATCH — if it is not, or if it’s unclear.
 
     @staticmethod
     def board_game_prompt_user(board_game: str, pdf_text: str) -> str:

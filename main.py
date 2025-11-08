@@ -69,13 +69,14 @@ def run_chatbot():
     # print("Launching Google, Bing, and Reddit searches...\n")
     final_state = graph.invoke(state)
 
-    if structured_output := final_state.get("boardgame_evaluation", ""):
+    if structured_output := final_state.get("structured_output", ""):
         pass
         # print(f"\nFinal Answer:\n{llm_evaluation}\n")
 
     if structured_output.rules:
         pdf_paths = [f"pdfs/{final_state.get('game_name')}"]
-        process_and_insert_pdf(pdf_paths)
+
+        # process_and_insert_pdf(pdf_paths)
 
         # pass
         # here do stuff. Chunk the pdf text and add it to db
