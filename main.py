@@ -9,6 +9,7 @@ import pdfplumber
 from web_crawler import query_google
 from prompts import get_rules_evaluation_message
 from pdf_to_db import process_and_insert_pdf
+from output_class import BoardGameEvaluation
 load_env = load_dotenv()
 
 llm = init_chat_model("gpt-4o-mini")
@@ -18,7 +19,7 @@ class State(TypedDict):
     # messages: Annotated[List, add_messages]
     game_name: str | None
     pdf_text: str | None
-    llm_evaluation: str | None
+    structured_output: BoardGameEvaluation | None
 
 
 def google_search(state):
@@ -31,9 +32,11 @@ def analyze_pdf(state):
     game_name = state.get("game_name", "")
     pdf_text = state.get("pdf_text", "")
     messages = get_rules_evaluation_message(game_name, pdf_text)
-    reply = llm.invoke(messages)
+    structured_llm = llm.with_structured_output(BoardGameEvaluation)
+    # reply = llm.invoke(messages)
+    structured_output = structured_llm.invoke(messages)
 
-    return {"llm_evaluation": reply.content}
+    return {"structured_output": structured_output}
 
 
 graph_builder = StateGraph(State)
@@ -60,15 +63,15 @@ def run_chatbot():
     #         break
     state = {"game_name": "catan",
              "pdf_text": None,
-             "llm_evaluation": None}
+             "boardgame_evaluation": None}
 
     # print("\nStarting parallel research process...")
     # print("Launching Google, Bing, and Reddit searches...\n")
     final_state = graph.invoke(state)
 
-    llm_evaluation = final_state.get("llm_evaluation", "")
+    structured_output = final_state.get("boardgame_evaluation", "")
 
-    if llm_evaluation:
+    if structured_output:
         print(f"\nFinal Answer:\n{llm_evaluation}\n")
 
     if llm_evaluation.split(" — ")[0] == "MATCH":
