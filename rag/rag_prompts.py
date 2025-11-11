@@ -53,29 +53,20 @@ def create_chat_prompts(system_prompt: str, user_prompt: str):
                                              ("human", user_prompt)])
 
 
-def create_message_pair(system_prompt: str, chat_history: str, user_prompt: str) -> list[Dict[str, Any]]:
-    """
-    Create a standardized message pair for LLM interactions.
-
-    Args:
-        system_prompt: The system message content
-        user_prompt: The user message content
-
-    Returns:
-        List containing system and user message dictionaries
-    """
-    return [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt},
-    ]
-
-
 # Convenience functions for creating complete message arrays
-def get_rules_evaluation_message(
-    board_game: str, pdf_text: str
-) -> list[Dict[str, Any]]:
+def get_history_aware_message(
+        input: str):
     """Get messages for Google results analysis."""
-    return create_message_pair(
-        PromptTemplates.board_game_prompt_system(),
-        PromptTemplates.board_game_prompt_user(board_game, pdf_text),
+    return create_chat_prompts(
+        PromptTemplates.history_aware_sys_prompt(),
+        PromptTemplates.board_game_prompt_user(input),
+    )
+
+
+def get_qa_message(
+        input: str):
+    """Get messages for Google results analysis."""
+    return create_chat_prompts(
+        PromptTemplates.answer_sys_prompt(),
+        PromptTemplates.board_game_prompt_user(input),
     )
