@@ -7,15 +7,3 @@ def extend_chathistory(chat_history, question, response):
     chat_history.extend([HumanMessage(content=question)],
                         AIMessage(content=response))
     return chat_history
-
-
-def create_context_q_prompt():
-
-    sys_prompt = """
-        Given a chat history and a user question, answer the question with the previous context. 
-        """
-
-    return ChatPromptTemplate.from_messages([("system", sys_prompt),
-                                             (MessagesPlaceholder(
-                                                 "chat_history")),
-                                             ("human", "{input}")])

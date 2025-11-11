@@ -1,5 +1,6 @@
 from typing import Dict, Any
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import MessagesPlaceholder
 
 
 class PromptTemplates:
@@ -45,11 +46,11 @@ Keep responses short, structured, and clear for easy reference during gameplay""
         return f""""User asks about board game rules: {input}"""
 
 
-def create_chat_prompts():
-    context_q_prompt = ChatPromptTemplate.from_messages([("system": sys_prompt),
-                                                         (MessagesPlaceholder(
-                                                             "chat_history")),
-                                                         ("human": "{input}")])
+def create_chat_prompts(system_prompt: str, user_prompt: str):
+    return ChatPromptTemplate.from_messages([("system", system_prompt),
+                                             (MessagesPlaceholder(
+                                                 "chat_history")),
+                                             ("human", user_prompt)])
 
 
 def create_message_pair(system_prompt: str, chat_history: str, user_prompt: str) -> list[Dict[str, Any]]:
