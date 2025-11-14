@@ -4,14 +4,13 @@ import uuid
 import hashlib
 import re
 from typing import List
-import psycopg
-from sentence_transformers import SentenceTransformer
+
+
 from langchain_community.document_loaders import PDFPlumberLoader
-import pdfplumber
 from dotenv import load_dotenv
 from langchain_community.vectorstores import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
+from langchain_huggingface import HuggingFaceEmbeddings
 load_env = load_dotenv()
 
 
@@ -40,7 +39,7 @@ def process_and_insert_pdf(paths: List[str]):
         chunk_size=1000, chunk_overlap=150)
     chunks = splitter.split_documents(pages)
 
-    embeddings = SentenceTransformer(EMBED_MODEL)
+    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
     vs = PGVector.from_documents(
         documents=chunks,
