@@ -1,3 +1,4 @@
+from pydantic import BaseModel, Field
 from typing import Dict, Any
 
 
@@ -55,3 +56,7 @@ def get_rules_evaluation_message(
         PromptTemplates.board_game_prompt_system(),
         PromptTemplates.board_game_prompt_user(board_game, pdf_text),
     )
+
+
+class BoardGameEvaluation(BaseModel):
+    rules: bool = Field("Evaluation whether the pdf is the board game or not")
