@@ -23,7 +23,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(router)
 
 
 @router.post("/chat")
@@ -39,3 +38,6 @@ def chat_endpoint(user_input: str) -> ChatResponse:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+app.include_router(router)
