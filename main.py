@@ -1,40 +1,41 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import Dict, List, Any
-from src.boardgame_agents.rag.rag_oop import RAGService, ChatRequest, ChatResponse
+from fastapi import FastAPI, APIRouter, HTTPException
+from contextlib import asynccontextmanager
 
-app = FastAPI()
+from src.boardgame_agents.rag.rag_oop import RAGService, ChatResponse
+
+router = APIRouter(
+    prefix="/boardgame-rag",
+    tags=["Dashboard"],
+    responses={404: {"description": "Not found"}},
+)
+
 rag_service: RAGService | None = None
 
 
-@app.on_event("startup")
-def on_startup() -> None:
-    """
-    Build the RAG chain once when the app starts.
-    This is where all the heavy initialization happens.
-    """
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     global rag_service
+
     rag_service = RAGService()
 
+    yield
+    pass
 
-@app.post("/chat", response_model=ChatResponse)
-def chat_endpoint(req: ChatRequest) -> ChatResponse:
-    """
-    POST /chat
-    Body: {"user_id": "...", "message": "..."}
-    Returns: {"answer": "..."}
-    """
+
+app = FastAPI(lifespan=lifespan)
+app.include_router(router)
+
+
+@router.post("/chat")
+def chat_endpoint(user_input: str) -> ChatResponse:
     if rag_service is None:
-        # Should never happen if startup runs correctly
         raise HTTPException(
             status_code=500, detail="RAG service not initialized")
 
-    answer = rag_service.chat(req.user_id, req.message)
+    answer = rag_service.chat(user_id=None, user_input=user_input)
     return ChatResponse(answer=answer)
-
-# Optionally, a simple health endpoint
 
 
 @app.get("/health")
-def health() -> dict:
+def health():
     return {"status": "ok"}

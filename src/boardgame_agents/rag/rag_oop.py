@@ -63,7 +63,8 @@ class RAGService:
         self.chat_histories[user_id] = history
 
     def chat(self, user_id: str, user_input: str) -> str:
-        chat_history = self._get_history_for_user(user_id)
+        # chat_history = self._get_history_for_user(user_id)
+        chat_history = []
 
         response = self.rag_chain.invoke(
             {"input": user_input, "chat_history": chat_history}
