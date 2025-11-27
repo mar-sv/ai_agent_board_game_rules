@@ -23,12 +23,10 @@ def get_retriver(n_search_kwargs=5):
 
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
 
-    # Connect to the same vectorstore / collection
     vectorstore = PGVector(
         connection=PG_DSN,
         embeddings=embeddings,
         collection_name="chunks"
     )
 
-    # Build retriever for top-k chunk retrieval
     return vectorstore.as_retriever(search_kwargs={"k": n_search_kwargs})

@@ -60,3 +60,5 @@ def get_rules_evaluation_message(
 
 class BoardGameEvaluation(BaseModel):
     rules: bool = Field("Evaluation whether the pdf is the board game or not")
+    creator: str = Field(
+        "Determine who is the creator of the board game, if it is a rule book")
