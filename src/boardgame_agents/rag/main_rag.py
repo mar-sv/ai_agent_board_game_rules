@@ -4,14 +4,14 @@ from langchain_classic.chains.retrieval import create_retrieval_chain
 from langchain.chat_models import init_chat_model
 from langchain_classic.chains import create_history_aware_retriever
 from src.boardgame_agents.rag.prompt_templates_rag import get_history_aware_message, get_qa_message
-from src.boardgame_agents.rag.rag_helpers import get_retriver, extend_chathistory
+from src.boardgame_agents.rag.rag_helpers import get_retriever, extend_chathistory, get_reranked_retriever
 
 # if __name__ == "__main__":
 
 
 def call_rag():
     llm = init_chat_model("gpt-4o-mini")
-    retriever = get_retriver()
+    retriever = get_reranked_retriever()
 
     context_q_prompt = get_history_aware_message()
     qa_prompt = get_qa_message(add_context=True)
