@@ -21,20 +21,19 @@ CHUNK_MAX_WORDS = int(os.getenv("CHUNK_MAX_WORDS", "220"))
 CHUNK_OVERLAP_WORDS = int(os.getenv("CHUNK_OVERLAP_WORDS", "60"))
 
 
-def process_and_insert_pdf(paths: List[str]):
-    for pdf_path in paths:
-        doc_name = Path(pdf_path).stem
+def process_and_insert_pdf(pdf_path: str):
+    doc_name = Path(pdf_path).stem
 
-        loader = PDFPlumberLoader(pdf_path)
-        pages = loader.load()
+    loader = PDFPlumberLoader(pdf_path)
+    pages = loader.load()
 
-        for d in pages:
-            d.metadata = {
-                **(d.metadata or {}),
-                "document_name": doc_name,
-                "source": doc_name,
-                "page": d.metadata.get("page", None)
-            }
+    for d in pages:
+        d.metadata = {
+            **(d.metadata or {}),
+            "document_name": doc_name,
+            "source": doc_name,
+            "page": d.metadata.get("page", None)
+        }
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=350, chunk_overlap=150)
     chunks = splitter.split_documents(pages)
