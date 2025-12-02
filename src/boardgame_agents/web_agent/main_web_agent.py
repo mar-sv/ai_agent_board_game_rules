@@ -5,7 +5,7 @@ from langchain.chat_models import init_chat_model
 from typing_extensions import TypedDict
 from web_crawler import query_google
 from prompts_templates_web import get_rules_evaluation_message, BoardGameEvaluation
-from db_insertion import process_and_insert_pdf
+from db_insertion import process_and_insert_pdf, document_exists_sql
 load_env = load_dotenv()
 
 llm = init_chat_model("gpt-4o-mini")
@@ -55,7 +55,9 @@ def run_chatbot(csv_name, board_game_name_column):
                  "pdf_text": None,
                  "boardgame_evaluation": None}
 
-        # TODO: check here if board game already exist
+        if document_exists_sql(game_name):
+            print(f"{game_name} already exists, skipping...")
+            continue
 
         final_state = graph.invoke(state)
 
@@ -71,4 +73,7 @@ def run_chatbot(csv_name, board_game_name_column):
 
 
 if __name__ == "__main__":
-    run_chatbot()
+    csv_name = r"C:\board_game_rag\rag_test.csv"
+    board_game_name_column = "board_game_name"
+    run_chatbot(csv_name=csv_name,
+                board_game_name_column=board_game_name_column)

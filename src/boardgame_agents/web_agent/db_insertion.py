@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
+import psycopg2
+
 load_env = load_dotenv()
 
 
@@ -46,6 +48,23 @@ def process_and_insert_pdf(pdf_path: str):
         collection_name="chunks",
         connection=PG_DSN
     )
+
+
+def document_exists_sql(doc_name: str) -> bool:
+    conn = psycopg2.connect(PG_DSN)
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT 1 FROM langchain_pg_embedding
+        WHERE cmetadata->>'document_name' = %s
+        LIMIT 1;
+    """, (doc_name,))
+
+    exists = cur.fetchone() is not None
+
+    cur.close()
+    conn.close()
+    return exists
 
 
 if __name__ == "__main__":
