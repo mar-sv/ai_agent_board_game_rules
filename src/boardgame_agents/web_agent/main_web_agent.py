@@ -65,10 +65,10 @@ def run_chatbot(csv_name, board_game_name_column):
             pass
 
         if structured_output.rules:
-            pdf_paths = f"pdfs/{final_state.get('game_name')}.pdf"
+            pdf_path = f"pdfs/{final_state.get('game_name')}.pdf"
 
-            # TODO: Implement so that the creator of board game added
-            process_and_insert_pdf(pdf_paths)
+            process_and_insert_pdf(
+                pdf_path=pdf_path, creator=structured_output.creator)
         print("-" * 80)
 
 
