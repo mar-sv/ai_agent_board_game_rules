@@ -5,10 +5,18 @@ from langchain.chat_models import init_chat_model
 from langchain_classic.chains import create_history_aware_retriever
 from src.boardgame_agents.rag.prompt_templates_rag import get_history_aware_message, get_qa_message
 from src.boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever
+import os
+from langchain_openai import ChatOpenAI
 
 
 def call_rag():
-    llm = init_chat_model("gpt-4o-mini")
+
+    llm = ChatOpenAI(
+        model=os.getenv("LLM_MODEL"),
+        openai_api_key=os.getenv('OPENROUTER_API_KEY'),
+        openai_api_base="https://openrouter.ai/api/v1",
+        temperature=0.7,
+    )
     retriever = get_reranked_retriever()
 
     context_q_prompt = get_history_aware_message()

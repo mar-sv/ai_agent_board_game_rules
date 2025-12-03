@@ -8,12 +8,17 @@ from prompts_templates_web import get_rules_evaluation_message, BoardGameEvaluat
 from db_insertion import process_and_insert_pdf, document_exists_sql
 from langchain_qwq import ChatQwen
 import os
+from langchain_openai import ChatOpenAI
+
 load_env = load_dotenv()
 
 # llm = init_chat_model("gpt-4o-mini")
-llm = ChatQwen(
-    model="qwen-plus",
-    qwen_api_key=os.getenv("QWEN_API_KEY")
+llm = ChatOpenAI(
+    # any Qwen model name from OpenRouter
+    model=os.getenv("LLM_MODEL"),
+    openai_api_key=os.getenv('OPENROUTER_API_KEY'),
+    openai_api_base="https://openrouter.ai/api/v1",
+    temperature=0.7,
 )
 
 
