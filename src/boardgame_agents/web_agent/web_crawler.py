@@ -7,10 +7,10 @@ import pdfplumber
 load_dotenv()
 
 
-def query_google(search_term, prefix="board game rules pdf"):
+def query_google(search_term, postfix="board game rules pdf"):
     API_KEY = os.getenv("GOOGLE_API_KEY")
     SEARCH_ENGINE_ID = os.getenv("GOOGLE_CX_KEY")
-    query = f"{search_term} {prefix}"
+    query = f"{search_term} {postfix}"
 
     base_url = "https://www.googleapis.com/customsearch/v1"
     params = {
