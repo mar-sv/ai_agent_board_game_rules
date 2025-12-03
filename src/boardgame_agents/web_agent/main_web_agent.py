@@ -6,9 +6,15 @@ from typing_extensions import TypedDict
 from web_crawler import query_google
 from prompts_templates_web import get_rules_evaluation_message, BoardGameEvaluation
 from db_insertion import process_and_insert_pdf, document_exists_sql
+from langchain_qwq import ChatQwen
+import os
 load_env = load_dotenv()
 
-llm = init_chat_model("gpt-4o-mini")
+# llm = init_chat_model("gpt-4o-mini")
+llm = ChatQwen(
+    model="qwen-plus",
+    qwen_api_key=os.getenv("QWEN_API_KEY")
+)
 
 
 class State(TypedDict):
