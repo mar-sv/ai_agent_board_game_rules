@@ -66,7 +66,7 @@ def build_ragas_generator():
     return TestsetGenerator(llm=llm_wrapper, embedding_model=emb_wrapper)
 
 
-def main():
+def generate_testset():
     chunks = load_chunks_from_pg(collection_name="chunks")
     print(f"Loaded {len(chunks)} chunks from PGVector")
 
@@ -81,4 +81,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    generate_testset()
