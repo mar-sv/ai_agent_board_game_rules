@@ -11,6 +11,7 @@ from langchain_openai import ChatOpenAI
 from ragas.testset import TestsetGenerator
 from ragas.llms import LangchainLLMWrapper
 from ragas.embeddings import LangchainEmbeddingsWrapper
+from ragas.testset.transforms.splitters import HeadlineSplitter
 
 from ragas.llms import llm_factory
 
@@ -71,10 +72,12 @@ def generate_testset():
     print(f"Loaded {len(chunks)} chunks from PGVector")
 
     generator = build_ragas_generator()
+    transforms = [HeadlineSplitter()]  # keep only what you want
 
     testset = generator.generate_with_langchain_docs(
         documents=chunks,
         testset_size=20,
+        transforms=transforms,
         #   raise_exceptions=False,
     )
     return testset.to_dataset()
