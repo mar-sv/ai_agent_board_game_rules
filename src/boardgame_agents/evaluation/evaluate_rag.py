@@ -1,3 +1,7 @@
+import sys
+sys.path.append("C:/Github/ai_agent_board_game_rules")
+
+
 from ragas.testset import Testset  # just for type hint / clarity
 from langchain_openai import ChatOpenAI
 from src.boardgame_agents.rag.rag_helpers import get_reranked_retriever
@@ -12,8 +16,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 from ragas import evaluate
 from ragas.metrics import context_precision, context_recall
-
-# <-- your existing code pieces ---------------------------------------------
 
 EMBED_MODEL = os.getenv(
     "EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2"

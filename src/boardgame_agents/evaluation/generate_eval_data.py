@@ -75,7 +75,7 @@ def generate_testset():
     testset = generator.generate_with_langchain_docs(
         documents=chunks,
         testset_size=20,
-        raise_exceptions=False,
+        #   raise_exceptions=False,
     )
     return testset.to_dataset()
 
