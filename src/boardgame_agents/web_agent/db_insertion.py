@@ -48,10 +48,11 @@ def extract_pages_with_numbers(pdf_path, doc_name, creator):
                     "document_name": doc_name,
                     "source": doc_name,
                     "creator": creator,
-                    "page": page_idx + 1,   # ✅ correct page index
+                    "page": page_idx + 1,
                 },
             )
         )
+        print(full_text)
 
     return docs
 
@@ -94,10 +95,22 @@ def document_exists_sql(doc_name: str) -> bool:
     return exists
 
 
+def wipe_langchain_pg():
+    conn = psycopg2.connect(PG_DSN)
+    cur = conn.cursor()
+
+    cur.execute("TRUNCATE TABLE langchain_pg_embedding CASCADE;")
+    cur.execute("TRUNCATE TABLE langchain_pg_collection CASCADE;")
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 if __name__ == "__main__":
-    from langchain_community.document_loaders import PDFMinerLoader
     from langchain_core.documents import Document
+    wipe_langchain_pg()
 
     pdf_path = r"C:\Github\ai_agent_board_game_rules\pdfs\Terraforming Mars.pdf"
-    # process_and_insert_pdf(paths)
+    process_and_insert_pdf(pdf_path, creator="test")
     # main(paths)
