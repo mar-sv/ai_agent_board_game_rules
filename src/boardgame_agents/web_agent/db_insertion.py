@@ -11,7 +11,10 @@ from dotenv import load_dotenv
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.documents import Document
 import psycopg2
+from pdfminer.high_level import extract_pages
+from pdfminer.layout import LTTextContainer
 
 load_env = load_dotenv()
 
@@ -23,20 +26,41 @@ CHUNK_MAX_WORDS = int(os.getenv("CHUNK_MAX_WORDS", "220"))
 CHUNK_OVERLAP_WORDS = int(os.getenv("CHUNK_OVERLAP_WORDS", "60"))
 
 
+def extract_pages_with_numbers(pdf_path, doc_name, creator):
+    docs = []
+
+    for page_idx, layout in enumerate(extract_pages(pdf_path)):
+        page_text = []
+
+        for element in layout:
+            if isinstance(element, LTTextContainer):
+                if txt := element.get_text().strip():
+                    page_text.append(txt)
+
+        full_text = "\n".join(page_text)
+        if not full_text.strip():
+            continue
+
+        docs.append(
+            Document(
+                page_content=full_text,
+                metadata={
+                    "document_name": doc_name,
+                    "source": doc_name,
+                    "creator": creator,
+                    "page": page_idx + 1,   # ✅ correct page index
+                },
+            )
+        )
+
+    return docs
+
+
 def process_and_insert_pdf(pdf_path: str, creator: str):
     doc_name = Path(pdf_path).stem
 
-    loader = PDFPlumberLoader(pdf_path)
-    pages = loader.load()
+    pages = extract_pages_with_numbers(pdf_path, doc_name, creator)
 
-    for d in pages:
-        d.metadata = {
-            **(d.metadata or {}),
-            "document_name": doc_name,
-            "source": doc_name,
-            "page": d.metadata.get("page", None),
-            "creator": creator
-        }
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=350, chunk_overlap=150)
     chunks = splitter.split_documents(pages)
@@ -49,6 +73,8 @@ def process_and_insert_pdf(pdf_path: str, creator: str):
         collection_name="chunks",
         connection=PG_DSN
     )
+
+    print(f"Inserted {doc_name} by {creator} in the database")
 
 
 def document_exists_sql(doc_name: str) -> bool:
@@ -69,6 +95,9 @@ def document_exists_sql(doc_name: str) -> bool:
 
 
 if __name__ == "__main__":
-    paths = ["pdfs/Terraforming Mars.pdf"]
-    process_and_insert_pdf(paths)
+    from langchain_community.document_loaders import PDFMinerLoader
+    from langchain_core.documents import Document
+
+    pdf_path = r"C:\Github\ai_agent_board_game_rules\pdfs\Terraforming Mars.pdf"
+    # process_and_insert_pdf(paths)
     # main(paths)
