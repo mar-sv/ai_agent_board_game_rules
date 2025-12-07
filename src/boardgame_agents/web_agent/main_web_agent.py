@@ -58,7 +58,7 @@ graph_builder.add_edge(start_key="analyze_pdf", end_key=END)
 graph = graph_builder.compile()
 
 
-def run_chatbot(csv_name, board_game_name_column):
+def run_web_agent(csv_name, board_game_name_column):
     game_names = pd.read_csv(csv_name)[board_game_name_column].to_list()
     for game_name in game_names:
         state = {"game_name": game_name,
@@ -85,5 +85,5 @@ def run_chatbot(csv_name, board_game_name_column):
 if __name__ == "__main__":
     csv_name = r"C:\board_game_rag\rag_test.csv"
     board_game_name_column = "board_game_name"
-    run_chatbot(csv_name=csv_name,
-                board_game_name_column=board_game_name_column)
+    run_web_agent(csv_name=csv_name,
+                  board_game_name_column=board_game_name_column)

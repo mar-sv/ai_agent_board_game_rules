@@ -105,11 +105,13 @@ def wipe_langchain_pg():
     cur.close()
     conn.close()
 
+    print("Resetted langchain db")
+
 
 if __name__ == "__main__":
     from langchain_core.documents import Document
     wipe_langchain_pg()
 
-    pdf_path = r"C:\Github\ai_agent_board_game_rules\pdfs\Terraforming Mars.pdf"
-    process_and_insert_pdf(pdf_path, creator="test")
+    # pdf_path = r"C:\Github\ai_agent_board_game_rules\pdfs\Terraforming Mars.pdf"
+    # process_and_insert_pdf(pdf_path, creator="test")
     # main(paths)
