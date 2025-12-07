@@ -52,7 +52,6 @@ def extract_pages_with_numbers(pdf_path, doc_name, creator):
                 },
             )
         )
-        print(full_text)
 
     return docs
 
@@ -63,7 +62,7 @@ def process_and_insert_pdf(pdf_path: str, creator: str):
     pages = extract_pages_with_numbers(pdf_path, doc_name, creator)
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=350, chunk_overlap=150)
+        chunk_size=800, chunk_overlap=150)
     chunks = splitter.split_documents(pages)
 
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
