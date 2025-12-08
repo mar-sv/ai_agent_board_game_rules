@@ -2,7 +2,7 @@ import requests
 from dotenv import load_dotenv
 import os
 from pathlib import Path
-import pdfplumber
+from pdfminer.high_level import extract_text
 
 load_dotenv()
 
@@ -52,5 +52,4 @@ def save_pdf(url, search_term, save_dir="pdfs"):
 
 
 def extract_text_from_pdf(pdf_path):
-    with pdfplumber.open(pdf_path) as pdf:
-        return "".join(page.extract_text() or "" for page in pdf.pages).replace("\n", " ")
+    return extract_text(pdf_path)
