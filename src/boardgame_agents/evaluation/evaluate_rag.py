@@ -1,21 +1,18 @@
+from ragas.metrics import context_precision, context_recall
+from ragas import evaluate
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_core.documents import Document
+from datasets import Dataset
+import os
+from src.boardgame_agents.evaluation.generate_eval_data import generate_testset
+from src.boardgame_agents.rag.rag_helpers import get_reranked_retriever
+from langchain_openai import ChatOpenAI
+from ragas.testset import Testset  # just for type hint / clarity
 import sys
+import mlflow
+
 sys.path.append("C:/Github/ai_agent_board_game_rules")
 
-
-from ragas.testset import Testset  # just for type hint / clarity
-from langchain_openai import ChatOpenAI
-from src.boardgame_agents.rag.rag_helpers import get_reranked_retriever
-from src.boardgame_agents.evaluation.generate_eval_data import generate_testset
-import os
-
-
-from datasets import Dataset
-
-from langchain_core.documents import Document
-from langchain_huggingface import HuggingFaceEmbeddings
-
-from ragas import evaluate
-from ragas.metrics import context_precision, context_recall
 
 EMBED_MODEL = os.getenv(
     "EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
@@ -58,7 +55,7 @@ def build_eval_dataset_from_testset(testset: "Testset"):
     return Dataset.from_list(rows)
 
 
-def evaluate_rag():
+def evaluate_rag(outpath):
     eval_ds = build_eval_dataset_from_testset(generate_testset())
 
     results = evaluate(
@@ -69,9 +66,14 @@ def evaluate_rag():
     )
 
     df = results.to_pandas()
-    print(df)
-    print("Mean context_precision:", df["context_precision"].mean())
-    print("Mean context_recall:", df["context_recall"].mean())
+    mean_precision = df["context_precision"].mean()
+    mean_recall = df["context_recall"].mean()
+
+    mlflow.log_metric("mean_context_precision", mean_precision)
+    mlflow.log_metric("mean_context_recall", mean_recall)
+
+    if outpath:
+        df.to_csv(outpath)
 
 
 if __name__ == "__main__":
