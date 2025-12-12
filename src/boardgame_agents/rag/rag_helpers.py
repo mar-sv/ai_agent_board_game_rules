@@ -24,6 +24,7 @@ def extend_chathistory(chat_history, user_input, llm_answer):
 
 def get_retriever(k: int = 5):
     PG_DSN = os.getenv("DB_DSN")
+    print(PG_DSN)
     EMBED_MODEL = os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2")
 
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)

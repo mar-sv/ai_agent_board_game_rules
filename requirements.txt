@@ -7,3 +7,7 @@ certifi
 mlflow
 langchain-classic
 langchain-qwq
+langchain-huggingface
+langchain-postgres
+sentence-transformers
+psycopg2-binary
