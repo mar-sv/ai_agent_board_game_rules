@@ -3,8 +3,8 @@ from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains.retrieval import create_retrieval_chain
 from langchain.chat_models import init_chat_model
 from langchain_classic.chains import create_history_aware_retriever
-from src.boardgame_agents.rag.prompt_templates_rag import get_history_aware_message, get_qa_message
-from src.boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever
+from boardgame_agents.rag.prompt_templates_rag import get_history_aware_message, get_qa_message
+from boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever
 import os
 from langchain_openai import ChatOpenAI
 

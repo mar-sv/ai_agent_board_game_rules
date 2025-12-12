@@ -4,8 +4,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from datasets import Dataset
 import os
-from src.boardgame_agents.evaluation.generate_eval_data import generate_testset
-from src.boardgame_agents.rag.rag_helpers import get_reranked_retriever
+from boardgame_agents.evaluation.generate_eval_data import generate_testset
+from boardgame_agents.rag.rag_helpers import get_reranked_retriever
 from langchain_openai import ChatOpenAI
 from ragas.testset import Testset  # just for type hint / clarity
 import sys

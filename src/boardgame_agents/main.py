@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException
 from contextlib import asynccontextmanager
 
-from src.boardgame_agents.rag.rag_oop import RAGService, ChatResponse
+from boardgame_agents.rag.rag_oop import RAGService, ChatResponse
 
 router = APIRouter(
     prefix="/boardgame-rag",
