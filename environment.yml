@@ -9,7 +9,6 @@ dependencies:
   - python-dotenv
   - ca-certificates
   - openssl
-  - ipykernel
   - pandas
   - certifi
-prefix: C:\Users\masv\AppData\Local\miniforge3\envs\ai_agent_board_rules
+  - mlflow
