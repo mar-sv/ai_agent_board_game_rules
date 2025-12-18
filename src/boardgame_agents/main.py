@@ -37,7 +37,7 @@ def chat_endpoint(user_input: str) -> ChatResponse:
 
 
 @router.post("/add_game")
-def add_game_to_context(user_input: str) -> ChatResponse:
+def add_game_to_context_endpoint(user_input: str) -> ChatResponse:
     if rag_service is None:
         raise HTTPException(
             status_code=500, detail="RAG service not initialized")

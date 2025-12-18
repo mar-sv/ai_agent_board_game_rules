@@ -30,7 +30,7 @@ class RAGService:
         self.llm = get_llm_model()
         self.retriever = get_reranked_retriever()
 
-    def set_game_as_context(self, game_name: str):
+    def add_game_to_context(self, game_name: str):
         context_q_prompt = get_history_aware_message()
         qa_prompt = get_qa_message(game_name, add_context=True)
 
