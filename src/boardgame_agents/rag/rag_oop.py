@@ -11,7 +11,7 @@ from boardgame_agents.rag.prompt_templates_rag import (
     get_history_aware_message,
     get_qa_message,
 )
-from boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever
+from boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
 
 # ---------- Pydantic models ----------
 
@@ -26,8 +26,8 @@ class ChatResponse(BaseModel):
 
 
 class RAGService:
-    def __init__(self, chat_model="gpt-4o-mini") -> None:
-        self.llm = init_chat_model(chat_model)
+    def __init__(self) -> None:
+        self.llm = get_llm_model()
         self.retriever = get_reranked_retriever()
 
         context_q_prompt = get_history_aware_message()

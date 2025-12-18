@@ -10,6 +10,7 @@ from langchain_core.runnables import Runnable
 from langchain_core.documents import Document
 
 from sentence_transformers import CrossEncoder
+from langchain_openai import ChatOpenAI
 
 load_dotenv()
 
@@ -68,3 +69,12 @@ class Reranker(Runnable):
 def get_reranked_retriever(initial_k: int = 5, final_k: int = 2) -> Reranker:
     base = get_retriever(k=initial_k)
     return Reranker(base, top_k=final_k)
+
+
+def get_llm_model(temperature=0):
+    return ChatOpenAI(
+        model=os.getenv("LLM_MODEL"),
+        openai_api_key=os.getenv('OPENROUTER_API_KEY'),
+        openai_api_base="https://openrouter.ai/api/v1",
+        temperature=temperature,
+    )
