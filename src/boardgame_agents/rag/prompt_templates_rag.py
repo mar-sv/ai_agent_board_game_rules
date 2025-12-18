@@ -25,10 +25,11 @@ If the user is clearly talking about rules, turns, actions, setup, victory condi
 Output ONLY the rewritten query, nothing else."""
 
     @staticmethod
-    def answer_sys_prompt() -> str:
+    def answer_sys_prompt(game_name) -> str:
         """System prompt for providing context to the rag"""
 
-        return f"""You are an expert assistant that answers questions about board games using retrieved rule chunks and metadata.
+        return f"""You are an expert assistant that answers questions about board games using retrieved rule chunks and metadata. 
+        You are an expert in the game {game_name}
 
 Your task:
 - Read the retrieved context carefully and answer the user’s question as accurately and concretely as possible.
@@ -67,10 +68,10 @@ def get_history_aware_message():
     )
 
 
-def get_qa_message(add_context=True):
+def get_qa_message(game_name, add_context=True):
     """Get messages for Google results analysis."""
     return create_chat_prompts(
-        PromptTemplates.answer_sys_prompt(),
+        PromptTemplates.answer_sys_prompt(game_name),
         PromptTemplates.board_game_prompt_user(),
         add_context=add_context
     )

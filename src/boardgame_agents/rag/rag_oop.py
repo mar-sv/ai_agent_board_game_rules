@@ -30,8 +30,9 @@ class RAGService:
         self.llm = get_llm_model()
         self.retriever = get_reranked_retriever()
 
+    def set_game_as_context(self, game_name: str):
         context_q_prompt = get_history_aware_message()
-        qa_prompt = get_qa_message(add_context=True)
+        qa_prompt = get_qa_message(game_name, add_context=True)
 
         self.history_aware_retriever = create_history_aware_retriever(
             self.llm, self.retriever, context_q_prompt
@@ -52,8 +53,6 @@ class RAGService:
             self.history_aware_retriever,
             question_answer_chain,
         )
-
-        self.chat_histories: Dict[str, List[Dict[str, Any]]] = {}
 
     def _get_history_for_user(self, user_id: str) -> List[Dict[str, Any]]:
         return self.chat_histories.get(user_id, [])
