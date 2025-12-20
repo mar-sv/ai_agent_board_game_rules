@@ -1,8 +1,7 @@
+from src.boardgame_agents.rag.rag_oop import RAGService, ChatResponse
 import uvicorn
 from fastapi import FastAPI, APIRouter, HTTPException
 from contextlib import asynccontextmanager
-
-from boardgame_agents.rag.rag_oop import RAGService, ChatResponse
 
 router = APIRouter(
     prefix="/boardgame-rag",
@@ -56,4 +55,4 @@ app.include_router(router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("__main__:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("src.main:app", host="127.0.0.1", port=8080, reload=True)
