@@ -7,11 +7,11 @@ from langchain_classic.chains.retrieval import create_retrieval_chain
 from langchain.chat_models import init_chat_model
 from langchain_classic.chains import create_history_aware_retriever
 
-from boardgame_agents.rag.prompt_templates_rag import (
+from src.boardgame_agents.rag.prompt_templates_rag import (
     get_history_aware_message,
     get_qa_message,
 )
-from boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
+from src.boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
 
 # ---------- Pydantic models ----------
 
@@ -29,6 +29,9 @@ class RAGService:
     def __init__(self) -> None:
         self.llm = get_llm_model()
         self.retriever = get_reranked_retriever()
+
+    def insert_game_to_database(game_name, session_id):
+        pass
 
     def add_game_to_context(self, game_name: str):
         context_q_prompt = get_history_aware_message()
@@ -71,6 +74,6 @@ class RAGService:
         answer = response["answer"]
 
         new_history = extend_chathistory(chat_history, user_input, answer)
-        self._set_history_for_user(user_id, new_history)
+        # self._set_history_for_user(user_id, new_history)
 
         return answer
