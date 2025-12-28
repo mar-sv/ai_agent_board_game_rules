@@ -4,7 +4,6 @@ from typing import Dict, List, Any
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains.retrieval import create_retrieval_chain
-from langchain.chat_models import init_chat_model
 from langchain_classic.chains import create_history_aware_retriever
 
 from src.boardgame_agents.rag.prompt_templates_rag import (
@@ -12,6 +11,7 @@ from src.boardgame_agents.rag.prompt_templates_rag import (
     get_qa_message,
 )
 from src.boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
+from src.boardgame_agents.rag.db_utils import insert_game_to_db
 
 # ---------- Pydantic models ----------
 
@@ -30,7 +30,8 @@ class RAGService:
         self.llm = get_llm_model()
         self.retriever = get_reranked_retriever()
 
-    def insert_game_to_database(game_name, session_id):
+    def init_session_to_database(self, game_name, session_id):
+        insert_game_to_db(game_name, session_id, chat_history={})
         pass
 
     def add_game_to_context(self, game_name: str):
