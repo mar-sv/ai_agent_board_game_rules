@@ -3,6 +3,7 @@ import uvicorn
 from fastapi import FastAPI, APIRouter, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from pydantic import BaseModel
 
 router = APIRouter(
     prefix="/boardgame_rag",
@@ -12,6 +13,16 @@ router = APIRouter(
 
 
 rag_service: RAGService | None = None
+
+
+class AddGameRequest(BaseModel):
+    game_name: str
+    session_id: str
+
+
+class ChatRequest(BaseModel):
+    user_input: str
+    session_id: str
 
 
 @asynccontextmanager
@@ -36,27 +47,30 @@ app.add_middleware(
 
 
 @router.get("/chat", response_model=ChatResponse)
-def chat_endpoint(user_input: str = Query(...)) -> ChatResponse:
+def chat_endpoint(payload: ChatRequest) -> ChatResponse:
     if rag_service is None:
         raise HTTPException(
             status_code=500, detail="RAG service not initialized"
         )
 
     answer = rag_service.chat(
-        user_id=None,
-        user_input=user_input
+        user_input=payload.user_input
+        session_id=payload.session_id
     )
 
     return ChatResponse(answer=answer)
 
 
 @router.post("/add_game")
-def add_game_to_context_endpoint(user_input: str) -> ChatResponse:
+def add_game_to_context_endpoint(payload: AddGameRequest):
     if rag_service is None:
         raise HTTPException(
             status_code=500, detail="RAG service not initialized")
 
-    rag_service.add_game_to_context(game_name="Catan")
+    rag_service.init_session_to_database(
+        game_name=payload.game_name,
+        session_id=payload.session_id,
+    )
     # return ChatResponse(answer=answer)
 
 

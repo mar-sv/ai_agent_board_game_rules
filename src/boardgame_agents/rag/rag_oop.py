@@ -11,7 +11,7 @@ from src.boardgame_agents.rag.prompt_templates_rag import (
     get_qa_message,
 )
 from src.boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
-from src.boardgame_agents.rag.db_utils import insert_game_to_db
+from src.boardgame_agents.rag.db_utils import insert_game_to_db, get_game_and_chat_history
 
 # ---------- Pydantic models ----------
 
@@ -32,7 +32,6 @@ class RAGService:
 
     def init_session_to_database(self, game_name, session_id):
         insert_game_to_db(game_name, session_id, chat_history={})
-        pass
 
     def add_game_to_context(self, game_name: str):
         context_q_prompt = get_history_aware_message()
@@ -65,8 +64,11 @@ class RAGService:
         # change later to insert to db
         self.chat_histories[user_id] = history
 
-    def chat(self, user_id: str, user_input: str) -> str:
+    def chat(self, user_input: str, session_id: str) -> str:
         # chat_history = self._get_history_for_user(user_id)
+        game_name, chat_history = get_game_and_chat_history(session_id)
+        # get game name from session id
+        self.add_game_to_context(game_name)
         chat_history = []
 
         response = self.rag_chain.invoke(
