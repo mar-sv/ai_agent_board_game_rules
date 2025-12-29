@@ -65,11 +65,10 @@ class RAGService:
         self.chat_histories[user_id] = history
 
     def chat(self, user_input: str, session_id: str) -> str:
-        # chat_history = self._get_history_for_user(user_id)
+
         game_name, chat_history = get_game_and_chat_history(session_id)
-        # get game name from session id
+
         self.add_game_to_context(game_name)
-        chat_history = []
 
         response = self.rag_chain.invoke(
             {"input": user_input, "chat_history": chat_history}
@@ -77,6 +76,7 @@ class RAGService:
         answer = response["answer"]
 
         new_history = extend_chathistory(chat_history, user_input, answer)
+        insert_game_to_db(game_name, session_id, chat_history=new_history)
         # self._set_history_for_user(user_id, new_history)
 
         return answer

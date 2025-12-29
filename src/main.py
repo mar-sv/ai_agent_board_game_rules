@@ -54,7 +54,7 @@ def chat_endpoint(payload: ChatRequest) -> ChatResponse:
         )
 
     answer = rag_service.chat(
-        user_input=payload.user_input
+        user_input=payload.user_input,
         session_id=payload.session_id
     )
 
