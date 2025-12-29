@@ -73,8 +73,39 @@ def process_and_insert_pdf(pdf_path: str, creator: str):
         collection_name="chunks",
         connection=PG_DSN
     )
+    insert_to_available_games(doc_name)
 
     print(f"Inserted {doc_name} by {creator} in the database")
+
+
+def ensure_games_table(cur, table_name: str = "available_games"):
+    cur.execute(f"""
+        CREATE TABLE IF NOT EXISTS {table_name} (
+            id UUID PRIMARY KEY,
+            game_name TEXT NOT NULL UNIQUE
+        );
+    """)
+
+
+def insert_to_available_games(
+    game_name: str,
+    game_id: uuid.UUID | None = None,
+    table_name: str = "available_games",
+):
+    if game_id is None:
+        game_id = uuid.uuid4()
+
+    with psycopg2.connect(PG_DSN) as conn:
+        with conn.cursor() as cur:
+            ensure_games_table(cur, table_name)
+
+            cur.execute(f"""
+                INSERT INTO {table_name} (id, game_name)
+                VALUES (%s, %s)
+                ON CONFLICT (game_name) DO NOTHING;
+            """, (game_id, game_name))
+
+    return game_id
 
 
 def document_exists_sql(doc_name: str) -> bool:

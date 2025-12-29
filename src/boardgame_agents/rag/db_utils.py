@@ -1,3 +1,6 @@
+from __future__ import annotations
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
+from typing import Any, Dict, List, Optional
 import os
 from dotenv import load_dotenv
 import uuid
@@ -23,8 +26,7 @@ def insert_game_to_db(game_name, session_id, chat_history, table_name: str = "ch
     if isinstance(session_id, str):
         session_id = uuid.UUID(session_id)
 
-    if chat_history is None:
-        chat_history = []
+    chat_history = [] if chat_history is None else lc_to_db_json(chat_history)
     if not isinstance(chat_history, list):
         raise TypeError(
             f"chat_history must be a list, got {type(chat_history)}")
@@ -62,4 +64,62 @@ def get_game_and_chat_history(session_id, table_name: str = "chat_history"):
         return None  # or raise
 
     game_name, chat_history = row
-    return game_name, chat_history
+
+    return game_name, db_json_to_lc(chat_history)
+
+
+def db_json_to_lc(history: Optional[List[Dict[str, Any]]]) -> List[BaseMessage]:
+    history = history or []
+    out: List[BaseMessage] = []
+
+    for m in history:
+        role = (m.get("role") or "").lower()
+        content = m.get("content", "")
+
+        if role in ("user", "human"):
+            out.append(HumanMessage(content=content))
+        elif role in ("assistant", "ai"):
+            out.append(AIMessage(content=content))
+        elif role == "system":
+            out.append(SystemMessage(content=content))
+        elif role == "tool":
+            # ToolMessage typically needs a tool_call_id; keep optional for your schema
+            out.append(ToolMessage(content=content,
+                       tool_call_id=m.get("tool_call_id", "tool")))
+        else:
+            # fallback: treat unknown as user text
+            out.append(HumanMessage(content=content))
+
+    return out
+
+# ---------- LangChain messages -> DB JSON ----------
+
+
+def lc_to_db_json(messages: Optional[List[BaseMessage]]) -> List[Dict[str, Any]]:
+    messages = messages or []
+    out: List[Dict[str, Any]] = []
+
+    for msg in messages:
+        # msg.type is typically: "human", "ai", "system", "tool"
+        t = getattr(msg, "type", None)
+
+        if t in ("human", "user"):
+            role = "user"
+        elif t in ("ai", "assistant"):
+            role = "assistant"
+        elif t == "system":
+            role = "system"
+        elif t == "tool":
+            role = "tool"
+        else:
+            role = "user"
+
+        item: Dict[str, Any] = {"role": role, "content": msg.content}
+
+        # preserve tool_call_id if present
+        if role == "tool" and hasattr(msg, "tool_call_id"):
+            item["tool_call_id"] = getattr(msg, "tool_call_id")
+
+        out.append(item)
+
+    return out
