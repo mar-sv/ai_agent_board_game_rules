@@ -11,3 +11,5 @@ langchain-huggingface
 langchain-postgres
 sentence-transformers
 psycopg2-binary
+pydantic
+fastapi
