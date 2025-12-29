@@ -47,15 +47,17 @@ app.add_middleware(
 
 
 @router.get("/chat", response_model=ChatResponse)
-def chat_endpoint(payload: ChatRequest) -> ChatResponse:
+def chat_endpoint(
+    user_input: str = Query(..., min_length=1),
+    session_id: str = Query(...),
+) -> ChatResponse:
     if rag_service is None:
         raise HTTPException(
-            status_code=500, detail="RAG service not initialized"
-        )
+            status_code=500, detail="RAG service not initialized")
 
     answer = rag_service.chat(
-        user_input=payload.user_input,
-        session_id=payload.session_id
+        user_input=user_input,
+        session_id=session_id,
     )
 
     return ChatResponse(answer=answer)
