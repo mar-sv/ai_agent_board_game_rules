@@ -6,12 +6,12 @@ from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains.retrieval import create_retrieval_chain
 from langchain_classic.chains import create_history_aware_retriever
 
-from src.boardgame_agents.rag.prompt_templates_rag import (
+from boardgame_agents.rag.prompt_templates_rag import (
     get_history_aware_message,
     get_qa_message,
 )
-from src.boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
-from src.boardgame_agents.rag.db_utils import insert_game_to_db, get_game_and_chat_history
+from boardgame_agents.rag.rag_helpers import extend_chathistory, get_reranked_retriever, get_llm_model
+from boardgame_agents.rag.db_utils import insert_game_to_db, get_game_and_chat_history
 
 # ---------- Pydantic models ----------
 

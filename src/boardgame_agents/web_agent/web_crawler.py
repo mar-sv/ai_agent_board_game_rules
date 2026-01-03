@@ -2,7 +2,8 @@ import requests
 from dotenv import load_dotenv
 import os
 from pathlib import Path
-from pdfminer.high_level import extract_text
+# from pdfminer.high_level import extract_text
+import pdfplumber
 from transformers import AutoTokenizer
 
 
@@ -53,12 +54,23 @@ def save_pdf(url, search_term, save_dir="pdfs"):
             print(f"Failed: {url} ({e})")
 
 
+# def extract_text_from_pdf(pdf_path, max_tokens=5000):
+#     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
+#     text = extract_text(pdf_path)
+
+#     tokens = tokenizer.encode(text)
+
+#     tokens = tokens[:max_tokens]
+
+#     return tokenizer.decode(tokens)
+
 def extract_text_from_pdf(pdf_path, max_tokens=5000):
     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
-    text = extract_text(pdf_path)
+
+    with pdfplumber.open(pdf_path) as pdf:
+        text = "".join(page.extract_text() or "" for page in pdf.pages)
 
     tokens = tokenizer.encode(text)
-
     tokens = tokens[:max_tokens]
 
     return tokenizer.decode(tokens)

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List, Dict
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
 from typing import Any, Dict, List, Optional
 import os
@@ -123,3 +124,33 @@ def lc_to_db_json(messages: Optional[List[BaseMessage]]) -> List[Dict[str, Any]]
         out.append(item)
 
     return out
+
+
+def search_available_games(query: str, limit: int = 20) -> List[Dict[str, str]]:
+    q = (query or "").strip()
+    if len(q) < 2:
+        return []
+
+    sql = """
+        SELECT
+            game_name
+        FROM available_games
+        WHERE game_name ILIKE %s
+        ORDER BY
+            CASE
+                WHEN game_name ILIKE %s THEN 0  -- prefix match first
+                ELSE 1
+            END,
+            game_name ASC
+        LIMIT %s;
+    """
+
+    like_any = f"%{q}%"
+    like_prefix = f"{q}%"
+
+    with psycopg2.connect(PG_DSN) as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (like_any, like_prefix, limit))
+            rows = cur.fetchall()
+
+    return [{"title": row[0]} for row in rows]

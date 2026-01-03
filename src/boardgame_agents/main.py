@@ -1,9 +1,10 @@
-from src.boardgame_agents.rag.rag_oop import RAGService, ChatResponse
+from boardgame_agents.rag.rag_oop import RAGService, ChatResponse
 import uvicorn
 from fastapi import FastAPI, APIRouter, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
+from boardgame_agents.rag.db_utils import search_available_games
 
 router = APIRouter(
     prefix="/boardgame_rag",
@@ -63,7 +64,7 @@ def chat_endpoint(
     return ChatResponse(answer=answer)
 
 
-@router.post("/add_game")
+@router.post("/add_game_to_context")
 def add_game_to_context_endpoint(payload: AddGameRequest):
     if rag_service is None:
         raise HTTPException(
@@ -73,7 +74,20 @@ def add_game_to_context_endpoint(payload: AddGameRequest):
         game_name=payload.game_name,
         session_id=payload.session_id,
     )
-    # return ChatResponse(answer=answer)
+
+
+@router.get("/games/search")
+def search_games(q: str = Query(..., min_length=2, description="Search query")):
+    q = q.strip()
+    if len(q) < 2:
+        return {"games": []}
+
+    try:
+        results = search_available_games(q)
+        return {"games": results}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail="Failed to search games") from e
 
 
 @app.get("/health")
@@ -85,4 +99,4 @@ app.include_router(router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("src.main:app", host="127.0.0.1", port=8080, reload=True)
+    uvicorn.run("main:app", host="127.0.0.1", port=8080, reload=True)

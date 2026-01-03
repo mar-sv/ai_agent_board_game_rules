@@ -6,7 +6,7 @@ import re
 from typing import List
 
 
-from langchain_community.document_loaders import PDFPlumberLoader
+# from langchain_community.document_loaders import PDFPlumberLoader
 from dotenv import load_dotenv
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
