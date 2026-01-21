@@ -126,6 +126,24 @@ def lc_to_db_json(messages: Optional[List[BaseMessage]]) -> List[Dict[str, Any]]
     return out
 
 
+def print_available_tables():
+    conn = psycopg2.connect(PG_DSN)
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT table_schema, table_name
+        FROM information_schema.tables
+        WHERE table_type = 'BASE TABLE'
+        ORDER BY table_schema, table_name;
+    """)
+
+    for schema, table in cur.fetchall():
+        print(f"{schema}.{table}")
+
+    cur.close()
+    conn.close()
+
+
 def search_available_games(query: str, limit: int = 20) -> List[Dict[str, str]]:
     q = (query or "").strip()
     if len(q) < 2:

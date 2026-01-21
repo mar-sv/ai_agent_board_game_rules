@@ -1,10 +1,17 @@
-from boardgame_agents.rag.rag_oop import RAGService, ChatResponse
-import uvicorn
-from fastapi import FastAPI, APIRouter, HTTPException, Query
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
+
 from pydantic import BaseModel
-from boardgame_agents.rag.db_utils import search_available_games
+from contextlib import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, APIRouter, HTTPException, Query
+import uvicorn
+
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from rag.rag_oop import RAGService, ChatResponse
+from boardgame_agents.rag.db_utils import search_available_games, print_available_tables
 
 router = APIRouter(
     prefix="/boardgame_rag",
@@ -83,6 +90,7 @@ def search_games(q: str = Query(..., min_length=2, description="Search query")):
         return {"games": []}
 
     try:
+        #print_available_tables()
         results = search_available_games(q)
         return {"games": results}
     except Exception as e:
@@ -99,4 +107,9 @@ app.include_router(router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8080, reload=True)
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),
+        reload=True,
+    )

@@ -37,6 +37,10 @@ class RAGService:
         context_q_prompt = get_history_aware_message()
         qa_prompt = get_qa_message(game_name, add_context=True)
 
+        self.retriever = get_reranked_retriever(
+            metadata_filter={"document_name": game_name}
+        )
+
         self.history_aware_retriever = create_history_aware_retriever(
             self.llm, self.retriever, context_q_prompt
         )

@@ -23,7 +23,7 @@ def extend_chathistory(chat_history, user_input, llm_answer):
     return chat_history
 
 
-def get_retriever(k: int = 5):
+def get_retriever(k: int = 5, metadata_filter: dict | None = None):
     PG_DSN = os.getenv("DB_DSN")
     print(PG_DSN)
     EMBED_MODEL = os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2")
@@ -36,7 +36,11 @@ def get_retriever(k: int = 5):
         collection_name="chunks",
     )
 
-    return vectorstore.as_retriever(search_kwargs={"k": k})
+    search_kwargs = {"k": k}
+    if metadata_filter:
+        search_kwargs["filter"] = metadata_filter
+
+    return vectorstore.as_retriever(search_kwargs=search_kwargs)
 
 
 class Reranker(Runnable):
@@ -66,8 +70,12 @@ class Reranker(Runnable):
         return [d for d, _ in ranked[: self.top_k]]
 
 
-def get_reranked_retriever(initial_k: int = 5, final_k: int = 2) -> Reranker:
-    base = get_retriever(k=initial_k)
+def get_reranked_retriever(
+    initial_k: int = 5,
+    final_k: int = 2,
+    metadata_filter: dict | None = None,
+) -> Reranker:
+    base = get_retriever(k=initial_k, metadata_filter=metadata_filter)
     return Reranker(base, top_k=final_k)
 
 
